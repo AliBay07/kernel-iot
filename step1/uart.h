@@ -13,6 +13,9 @@
  * this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+
+
 #ifndef UART_H_
 #define UART_H_
 
@@ -25,6 +28,22 @@
 #define UART0 0
 #define UART1 1
 #define UART2 2
+
+/*
+ * Structure to pass the uart cookie to the interrupt handler
+ */
+typedef struct cookie_uart {
+    uint8_t uartno;
+    char* pt;
+} cookie_uart_t;
+
+/*
+ * This is the interrupt handler for the UARTs.
+ * It is called by the ISR, and it is responsible
+ * for reading the character from the UART RX FIFO
+ * queue and .
+ */
+void uart_interrupt(uint8_t id, const void* cookie_uart);
 
 /*
  * Receives a one-byte character, which is compatible

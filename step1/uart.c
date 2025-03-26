@@ -25,14 +25,12 @@ struct uart {
 
 static struct uart uarts[NUARTS];
 
-static void uart_init(uint32_t uartno, void *bar) {
+static void uart_init(const uint32_t uartno, void *bar) {
   struct uart *uart = &uarts[uartno];
   uart->uartno = uartno;
   uart->bar = bar;
-  // no hardware initialization necessary
-  // when running on QEMU, the UARTs are
-  // already initialized, as long as we
-  // do not rely on interrupts.
+
+  mmio_write32(uart->bar, UART_IMSC, 0x0000);
 }
 
 void uarts_init() {
@@ -41,20 +39,27 @@ void uarts_init() {
   uart_init(UART2, UART2_BASE_ADDRESS);
 }
 
-void uart_enable(uint32_t uartno) {
-  struct uart *uart = &uarts[uartno];
-  // nothing to do here, as long as
-  // we do not rely on interrupts
+void uart_enable(const uint32_t uartno) {
+  const struct uart *uart = &uarts[uartno];
+  mmio_write32(uart->bar, UART_IMSC, UART_IMSC_RXIM);
 }
 
-void uart_disable(uint32_t uartno) {
-  struct uart *uart = &uarts[uartno];
-  // nothing to do here, as long as
-  // we do not rely on interrupts
+void uart_disable(const uint32_t uartno) {
+  const struct uart *uart = &uarts[uartno];
+  mmio_write32(uart->bar, UART_IMSC, 0);
 }
 
-void uart_receive(uint8_t uartno, char *pt) {
-  struct uart *uart = &uarts[uartno];
+void uart_interrupt(uint8_t id, const void* cookie_uart) {
+  const cookie_uart_t *cookie = cookie_uart;
+  const struct uart *uart = &uarts[cookie->uartno];
+  while (mmio_read8(uart->bar, UART_FR) & UART_FR_RXFE)
+    ;
+  *cookie->pt = mmio_read8(uart->bar, UART_DR);
+  uart_send(cookie->uartno, *cookie->pt);
+}
+
+void uart_receive(const uint8_t uartno, char *pt) {
+  const struct uart *uart = &uarts[uartno];
   while (mmio_read8(uart->bar, UART_FR) & UART_FR_RXFE)
     ;
   *pt = mmio_read8(uart->bar, UART_DR);
@@ -64,24 +69,18 @@ void uart_receive(uint8_t uartno, char *pt) {
  * Sends a character through the given uart, this is a blocking call
  * until the character has been sent.
  */
-void uart_send(uint8_t uartno, char s) {
-  struct uart *uart = &uarts[uartno];
-
+void uart_send(const uint8_t uartno, const char s) {
+  const struct uart *uart = &uarts[uartno];
   while (mmio_read8(uart->bar, UART_FR) & UART_FR_TXFF)
     ;
-
-  if (s == '\r') {
-    mmio_write8(uart->bar, UART_DR, '\n');
-  } else {
-    mmio_write8(uart->bar, UART_DR, s);
-  }
+  mmio_write8(uart->bar, UART_DR, s);
 }
 
 /**
  * This is a wrapper function, provided for simplicity,
  * it sends a C string through the given uart.
  */
-void uart_send_string(uint8_t uartno, const char *s) {
+void uart_send_string(const uint8_t uartno, const char *s) {
   while (*s != '\0') {
     uart_send(uartno, *s);
     s++;
