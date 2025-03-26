@@ -14,6 +14,7 @@
  */
 
 #include "isr.h"
+#include "uart.h"
 #include "isr-mmio.h"
 #include "main.h"
 
@@ -28,14 +29,6 @@ extern void _irqs_disable(void);
 
 extern void _wfi(void);
 
-/*
- * Data structure for handlers and cookies
- */
-typedef struct handler {
-    void (*callback)(uint32_t index, void *);
-    void *cookie;
-} handler_t;
-
 handler_t handlers[NIRQS];
 
 /*
@@ -49,7 +42,7 @@ void isr() {
     for (uint32_t i = 0; i < NIRQS; i++) {
         const handler_t *handler = &handlers[i];
         if (irqs & (1 << i))
-            handler->callback(i, handler->cookie);
+            handler->callback(handler->cookie);
     }
     core_enable_irqs();
     // vic_ack_irqs(irqs);
@@ -60,6 +53,30 @@ void core_enable_irqs() { _irqs_enable(); }
 void core_disable_irqs() { _irqs_disable(); }
 
 void core_halt() { _wfi(); }
+
+/**
+ * Enable the UART IRQs
+ */
+void vic_enable_uart_irqs(char* c) {
+    cookie_uart_t cookie = {UART0, c};
+    vic_enable_irq(UART0_IRQ, uart_interrupt, &cookie);
+}
+
+/**
+ * Enable the system IRQs
+ */
+void vic_enable_irqs(char *c) {
+   vic_enable_uart_irqs(c);
+}
+
+/**
+ * Setup the IRQs
+ */
+void setup_irqs(const irqs_params* params) {
+    vic_setup_irqs();
+    vic_enable_irqs(params->uart0_char);
+    uart_send_string(UART0, "IRQ's setup has been completed...\n");
+}
 
 /*
  * Initial setup our interrupt support,
@@ -83,7 +100,7 @@ uint32_t vic_load_irqs(void) {
 /*
  * Enables the given interrupt at the VIC level.
 */
-void vic_enable_irq(const uint32_t irq, void (*callback)(uint32_t, void *),
+void vic_enable_irq(const uint32_t irq, void (*callback)(void *),
                     void *cookie) {
     const handler_t handler = {callback, cookie};
     handlers[irq] = handler;

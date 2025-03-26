@@ -19,50 +19,8 @@
 extern uint32_t irq_stack_top;
 extern uint32_t stack_top;
 
-/**
- * Structure that contains the needed params for the IRQs
- */
-typedef struct irqs_params {
-    char* uart0_char;
-} irqs_params;
-
-/**
- * Enable the UART IRQs
- */
-void vic_enable_uart_irqs(char* c) {
-    cookie_uart_t cookie;
-    cookie.pt = c;
-    cookie.uartno = UART0;
-    vic_enable_irq(UART0_IRQ, uart_interrupt, &cookie);
-}
-
-/**
- * Enable the system IRQs
- */
-void vic_enable_irqs(char *c) {
-   vic_enable_uart_irqs(c);
-}
-
-/**
- * Setup the UARTs
- */
-void setup_uarts() {
-    uarts_init();
-    uart_enable(UART0);
-    uart_send_string(UART0, "UARt's setup has been completed...\n");
-}
-
-/**
- * Setup the IRQs
- */
-void setup_irqs(const irqs_params* params) {
-    vic_setup_irqs();
-    vic_enable_irqs(params->uart0_char);
-    uart_send_string(UART0, "IRQ's setup has been completed...\n");
-}
-
 void check_stacks() {
-    void *memsize = (void *) MEMORY;
+    void *memsize = (void *)MEMORY;
     const void *addr = &stack_top;
     if (addr >= memsize)
         panic();
@@ -82,7 +40,7 @@ void _start(void) {
     check_stacks();
     // Instead of creating a variable, reserve a space in the stack in a well known
     // address to use for the irq param struct ?
-    irqs_params params;
+    const irqs_params params;
     setup_uarts();
     setup_irqs(&params);
     uart_send_string(UART0, "The system is now running... \n");

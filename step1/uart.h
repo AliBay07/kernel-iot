@@ -43,7 +43,7 @@ typedef struct cookie_uart {
  * for reading the character from the UART RX FIFO
  * queue and .
  */
-void uart_interrupt(uint8_t id, const void* cookie_uart);
+void uart_interrupt(void* cookie_uart);
 
 /*
  * Receives a one-byte character, which is compatible
@@ -69,6 +69,13 @@ void uart_send(uint8_t uartno, char s);
  * using the function uart_send.
  */
 void uart_send_string(uint8_t uartno, const char *s);
+
+
+/*
+ * Enables the UARTs
+ */
+void setup_uarts();
+
 
 /*
  * Global initialization for all the UARTs

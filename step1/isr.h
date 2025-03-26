@@ -76,6 +76,36 @@ void core_disable_irqs();
 void core_halt(void);
 
 /*
+ * Data structure for handlers and cookies
+ */
+typedef struct handler {
+    void (*callback)(void *);
+    void *cookie;
+} handler_t;
+
+/*
+ * Structure that contains the needed params for the IRQs
+ */
+typedef struct irqs_params {
+    char* uart0_char;
+} irqs_params;
+
+/*
+ * Enable the UART IRQs
+ */
+void vic_enable_uart_irqs(char* c);
+
+/*
+ * Enable the system IRQs
+ */
+void vic_enable_irqs(char *c);
+
+/*
+ * Setup the IRQs
+ */
+void setup_irqs(const irqs_params* params);
+
+/*
  * VIC Setup: setup the Interrupt Service Routine
  * data structure for handlers and cookies.
  */
@@ -85,7 +115,7 @@ void vic_setup_irqs();
  * VIC enables the given interrupt,
  * like UART0_IRQ
  */
-void vic_enable_irq(uint32_t irq, void (*callback)(uint32_t, void *),
+void vic_enable_irq(uint32_t irq, void (*callback)(void *),
                     void *cookie);
 
 /*

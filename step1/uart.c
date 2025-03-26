@@ -39,6 +39,15 @@ void uarts_init() {
   uart_init(UART2, UART2_BASE_ADDRESS);
 }
 
+/*
+ * Setup the UARTs
+ */
+void setup_uarts() {
+    uarts_init();
+    uart_enable(UART0);
+    uart_send_string(UART0, "UARt's setup has been completed...\n");
+}
+
 void uart_enable(const uint32_t uartno) {
   const struct uart *uart = &uarts[uartno];
   mmio_write32(uart->bar, UART_IMSC, UART_IMSC_RXIM);
@@ -49,7 +58,7 @@ void uart_disable(const uint32_t uartno) {
   mmio_write32(uart->bar, UART_IMSC, 0);
 }
 
-void uart_interrupt(uint8_t id, const void* cookie_uart) {
+void uart_interrupt(void* cookie_uart) {
   const cookie_uart_t *cookie = cookie_uart;
   const struct uart *uart = &uarts[cookie->uartno];
   while (mmio_read8(uart->bar, UART_FR) & UART_FR_RXFE)
