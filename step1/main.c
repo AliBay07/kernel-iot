@@ -15,6 +15,7 @@
 #include "main.h"
 #include "isr.h"
 #include "uart.h"
+#include "shell.h"
 
 extern uint32_t irq_stack_top;
 extern uint32_t stack_top;
@@ -38,12 +39,10 @@ void check_stacks() {
  */
 void _start(void) {
     check_stacks();
-    // Instead of creating a variable, reserve a space in the stack in a well known
-    // address to use for the irq param struct ?
     const irqs_params params;
     setup_uarts();
     setup_irqs(&params);
-    uart_send_string(UART0, "The system is now running... \n");
+    shell_init();
     for (;;) {
         core_halt();
     }

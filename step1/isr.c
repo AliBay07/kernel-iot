@@ -65,7 +65,7 @@ void vic_enable_uart_irqs(char* c) {
 /**
  * Enable the system IRQs
  */
-void vic_enable_irqs(char *c) {
+void vic_enable_irqs(char* c) {
    vic_enable_uart_irqs(c);
 }
 

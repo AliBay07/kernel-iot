@@ -17,6 +17,7 @@
 #include "main.h"
 #include "uart-mmio.h"
 #include <stdint.h>
+#include "shell.h"
 
 struct uart {
   uint8_t uartno; // the UART numéro
@@ -45,7 +46,7 @@ void uarts_init() {
 void setup_uarts() {
     uarts_init();
     uart_enable(UART0);
-    uart_send_string(UART0, "UARt's setup has been completed...\n");
+    uart_send_string(UART0, "UART's setup has been completed...\n");
 }
 
 void uart_enable(const uint32_t uartno) {
@@ -63,8 +64,8 @@ void uart_interrupt(void* cookie_uart) {
   const struct uart *uart = &uarts[cookie->uartno];
   while (mmio_read8(uart->bar, UART_FR) & UART_FR_RXFE)
     ;
-  *cookie->pt = mmio_read8(uart->bar, UART_DR);
-  uart_send(cookie->uartno, *cookie->pt);
+  const char c = mmio_read8(uart->bar, UART_DR);
+  shell_process_char(c);
 }
 
 void uart_receive(const uint8_t uartno, char *pt) {
