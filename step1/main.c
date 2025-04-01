@@ -39,9 +39,8 @@ void check_stacks() {
  */
 void _start(void) {
     check_stacks();
-    const irqs_params params;
     setup_uarts();
-    setup_irqs(&params);
+    setup_irqs();
     shell_init();
     for (;;) {
         core_halt();

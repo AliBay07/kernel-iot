@@ -60,7 +60,7 @@ void uart_disable(const uint32_t uartno) {
 }
 
 void uart_interrupt(void* cookie_uart) {
-  const cookie_uart_t *cookie = cookie_uart;
+  const cookie_uart_t *cookie = (cookie_uart_t *)cookie_uart;
   const struct uart *uart = &uarts[cookie->uartno];
   while (mmio_read8(uart->bar, UART_FR) & UART_FR_RXFE)
     ;

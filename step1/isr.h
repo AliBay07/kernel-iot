@@ -84,26 +84,19 @@ typedef struct handler {
 } handler_t;
 
 /*
- * Structure that contains the needed params for the IRQs
- */
-typedef struct irqs_params {
-    char* uart0_char;
-} irqs_params;
-
-/*
  * Enable the UART IRQs
  */
-void vic_enable_uart_irqs(char* c);
+void vic_enable_uart_irqs();
 
 /*
  * Enable the system IRQs
  */
-void vic_enable_irqs(char *c);
+void vic_enable_irqs();
 
 /*
  * Setup the IRQs
  */
-void setup_irqs(const irqs_params* params);
+void setup_irqs();
 
 /*
  * VIC Setup: setup the Interrupt Service Routine

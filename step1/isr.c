@@ -30,6 +30,7 @@ extern void _irqs_disable(void);
 extern void _wfi(void);
 
 handler_t handlers[NIRQS];
+static cookie_uart_t uart0_cookie;
 
 /*
  * Interrupt Service Routine, up-called from assembly.
@@ -37,15 +38,12 @@ handler_t handlers[NIRQS];
  * status and call the corresponding handlers.
  */
 void isr() {
-    core_disable_irqs();
     const uint32_t irqs = vic_load_irqs();
     for (uint32_t i = 0; i < NIRQS; i++) {
         const handler_t *handler = &handlers[i];
         if (irqs & (1 << i))
             handler->callback(handler->cookie);
     }
-    core_enable_irqs();
-    // vic_ack_irqs(irqs);
 }
 
 void core_enable_irqs() { _irqs_enable(); }
@@ -57,24 +55,24 @@ void core_halt() { _wfi(); }
 /**
  * Enable the UART IRQs
  */
-void vic_enable_uart_irqs(char* c) {
-    cookie_uart_t cookie = {UART0, c};
-    vic_enable_irq(UART0_IRQ, uart_interrupt, &cookie);
+void vic_enable_uart_irqs() {
+    uart0_cookie.uartno = UART0;
+    vic_enable_irq(UART0_IRQ, uart_interrupt, &uart0_cookie);
 }
 
 /**
  * Enable the system IRQs
  */
-void vic_enable_irqs(char* c) {
-   vic_enable_uart_irqs(c);
+void vic_enable_irqs() {
+   vic_enable_uart_irqs();
 }
 
 /**
  * Setup the IRQs
  */
-void setup_irqs(const irqs_params* params) {
+void setup_irqs() {
     vic_setup_irqs();
-    vic_enable_irqs(params->uart0_char);
+    vic_enable_irqs();
     uart_send_string(UART0, "IRQ's setup has been completed...\n");
 }
 

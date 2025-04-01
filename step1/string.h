@@ -15,4 +15,10 @@ int strncmp(const char *s1, const char *s2, uint32_t n);
  */
 uint32_t strlen(const char *s);
 
+/* Minimal implementation of strcpy.
+ * Copies the string pointed to by src to dest.
+ * Returns a pointer to dest.
+ */
+char *strcpy(char *dest, const char *src);
+
 #endif //STRING_H

@@ -34,7 +34,6 @@
  */
 typedef struct cookie_uart {
     uint8_t uartno;
-    char* pt;
 } cookie_uart_t;
 
 /*
