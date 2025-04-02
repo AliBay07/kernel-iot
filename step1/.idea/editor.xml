@@ -337,6 +337,10 @@
     <option name="/Default/CodeInspection/Highlighting/InspectionSeverities/=StringLiteralTypo/@EntryIndexedValue" value="DO_NOT_SHOW" type="string" />
     <option name="/Default/CodeInspection/Highlighting/InspectionSeverities/=CommentTypo/@EntryIndexedValue" value="DO_NOT_SHOW" type="string" />
     <option name="/Default/CodeInspection/Highlighting/InspectionSeverities/=IdentifierTypo/@EntryIndexedValue" value="DO_NOT_SHOW" type="string" />
+    <option name="/Default/CodeStyle/CppSortIncludes/UnmatchedHeaderOrder/@EntryValue" value="5" type="long" />
+    <option name="/Default/CodeStyle/CppSortIncludes/MainHeaderOrder/@EntryValue" value="2" type="long" />
+    <option name="/Default/CodeStyle/CppSortIncludes/IncludeSortCategories/@EntryValue" value="&lt;CppIncludeCategories&gt;&#10;  &lt;CppIncludeCategorySetting Pattern=&quot;/include&quot; Description=&quot;#include &amp;quot;header&amp;quot;&quot; Group=&quot;1&quot; Order=&quot;1&quot; /&gt;&#10;  &lt;CppIncludeCategorySetting Pattern=&quot;^&amp;lt;.*&quot; Description=&quot;#include &amp;lt;header&amp;gt;&quot; Group=&quot;2&quot; Order=&quot;3&quot; /&gt;&#10;  &lt;CppIncludeCategorySetting Pattern=&quot;^&amp;quot;.*&quot; Description=&quot;#include &amp;quot;header&amp;quot;&quot; Group=&quot;3&quot; Order=&quot;4&quot; /&gt;&#10;&lt;/CppIncludeCategories&gt;" type="string" />
+    <option name="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003Amain_002Ec_002Fl_003Asrc_003Fmain_002Ec/@EntryIndexedValue" value="ForceIncluded" type="string" />
     <option name="/Default/CodeInspection/Highlighting/InspectionSeverities/=CppSmartPointerVsMakeFunction/@EntryIndexRemoved" />
     <option name="/Default/CodeInspection/Highlighting/InspectionSeverities/=CppCStyleCast/@EntryIndexRemoved" />
     <option name="/Default/CodeInspection/Highlighting/InspectionSeverities/=CppFunctionalStyleCast/@EntryIndexRemoved" />

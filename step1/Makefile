@@ -11,89 +11,85 @@
 # You should have received a copy of the GNU General Public License along with this program.
 # If not, see <https://www.gnu.org/licenses/>.
 
-#-----------------------------------------------
-# This is the configurable part of the makefile:
-#-----------------------------------------------
-BOARD=versatile
-CPU=cortex-a8
-TOOLCHAIN=arm-none-eabi
-DEBUG?=yes
-BUILD=build/
+#----------------- Configuration ------------------
+BOARD       = versatile
+CPU         = cortex-a8
+TOOLCHAIN   = arm-none-eabi
+DEBUG       ?= yes
+BUILD       = build/
+BUILD_ASM   = $(BUILD)asm/
+BUILD_SRC   = $(BUILD)src/
+SRC_DIR     = src
+INC_DIR     = include
 
-objs= startup.o main.o exception.o uart.o irq.o isr.o string.o shell.o
+SRC_C       = $(wildcard $(SRC_DIR)/*.c)
+SRC_ASM     = $(wildcard $(SRC_DIR)/*.s)
 
-#===================================================================
-# This is the non-configurable part of the makefile,
-#===================================================================
+OBJS_ASM    = $(patsubst $(SRC_DIR)/%.s,$(BUILD_ASM)/%.o,$(SRC_ASM))
+OBJS_C      = $(patsubst $(SRC_DIR)/%.c,$(BUILD_SRC)/%.o,$(SRC_C))
 
-OBJS = $(addprefix $(BUILD), $(objs)) 
+OBJS        = $(OBJS_ASM) $(OBJS_C)
 
+#--------------------------------------------------
+# Board-specific settings for Versatile Board
 ifeq ($(BOARD),versatile)
-  # QEMU configuration arguments:
-  VGA=-nographic
-  SERIAL=-serial mon:stdio
-  # memory size in kilo bytes.
-  MEMSIZE=32
-  MEMORY="$(MEMSIZE)K"  
-  MACHINE=versatileab  
-  # QEMU executable and QEMU arguments
-  QEMU=qemu-system-arm
-  QEMU_ARGS=-M $(MACHINE) -cpu $(CPU) -m $(MEMORY) $(VGA) $(SERIAL)
-  # compilation and linking flags:
-  CFLAGS= -c -mcpu=$(CPU) -nostdlib -ffreestanding 
-  CFLAGS+=-DCPU=$(CPU) -DMEMORY="($(MEMSIZE)*1024)"  
-  ASFLAGS= -mcpu=$(CPU) 
-  LDFLAGS= -T kernel.ld -nostdlib -static
+  VGA       = -nographic
+  SERIAL    = -serial mon:stdio
+  MEMSIZE   = 32
+  MEMORY    = "$(MEMSIZE)K"
+  MACHINE   = versatileab
+  QEMU      = qemu-system-arm
+  QEMU_ARGS = -M $(MACHINE) -cpu $(CPU) -m $(MEMORY) $(VGA) $(SERIAL)
+
+  CFLAGS    = -c -mcpu=$(CPU) -nostdlib -ffreestanding -I$(INC_DIR)
+  CFLAGS   += -DCPU=$(CPU) -DMEMORY="($(MEMSIZE)*1024)"
+  ASFLAGS   = -mcpu=$(CPU)
+  LDFLAGS = -T ld/kernel.ld -nostdlib -static
 endif
 
 ifeq ($(DEBUG),yes)
-  CFLAGS+= -ggdb
-  LDFLAGS+= -g
-  ASFLAGS+= -g
+  CFLAGS   += -ggdb
+  LDFLAGS  += -g
+  ASFLAGS  += -g
 endif
 
 ifndef MACHINE
-  $(error Must choose a board (e.g. Versatile AB or PB)) 
+  $(error Must choose a board (e.g. Versatile AB or PB))
 endif
 
-#-------------------------------------------------------------------
-# Compilation Rules
-#-------------------------------------------------------------------
-$(BUILD)%.o: %.c
-	$(TOOLCHAIN)-gcc $(CFLAGS) -o $@ $<
+#----------------- Build Rules -------------------
+build:
+	@mkdir -p $(BUILD) $(BUILD_ASM) $(BUILD_SRC)
 
-$(BUILD)%.o: %.s
+# Compile Assembly files
+$(BUILD_ASM)/%.o: $(SRC_DIR)/%.s | build
 	$(TOOLCHAIN)-as $(ASFLAGS) -o $@ $<
 
-#-------------------------------------------------------------------
-# Build and link all
-# Notice that we link with our own linker script: test.ld
-#-------------------------------------------------------------------
-all: build $(BUILD)kernel.elf $(BUILD)kernel.bin
+# Compile C files
+$(BUILD_SRC)/%.o: $(SRC_DIR)/%.c | build
+	$(TOOLCHAIN)-gcc $(CFLAGS) -o $@ $<
 
+# Link kernel
 $(BUILD)kernel.elf: $(OBJS)
-	$(TOOLCHAIN)-ld $(LDFLAGS) $(OBJS) -o $(BUILD)kernel.elf
+	$(TOOLCHAIN)-ld $(LDFLAGS) $(OBJS) -o $@
 
+# Convert ELF to binary
 $(BUILD)kernel.bin: $(BUILD)kernel.elf
-	$(TOOLCHAIN)-objcopy -O binary $(BUILD)kernel.elf $(BUILD)kernel.bin 
+	$(TOOLCHAIN)-objcopy -O binary $< $@
 
-build:
-	@mkdir $(BUILD)
-	
-clean: 
-	rm -rf $(BUILD) 
+all: $(BUILD)kernel.bin
 
-#-------------------------------------------------------------------
-# Targets to launch QEMU: running standalone or under gdb's control
-#-------------------------------------------------------------------
+clean:
+	rm -rf $(BUILD)
+
+#----------------- QEMU Targets ------------------
 ifeq ($(BOARD),versatile)
 run: all
 	@echo "\n\nBoard: Versatile Board...\n"
 	$(QEMU) $(QEMU_ARGS) -device loader,file=$(BUILD)kernel.elf
 
 debug: all
-	@echo "\n\nBoard: Versatile Board...\n"
+	@echo "\n\nBoard: Versatile Board (Debug Mode)...\n"
 	$(QEMU) $(QEMU_ARGS) -device loader,file=$(BUILD)kernel.elf -gdb tcp::1234 -S
-# -cpu $(CPU)
-
 endif
+

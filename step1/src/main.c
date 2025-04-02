@@ -14,6 +14,7 @@
  */
 #include "main.h"
 #include "isr.h"
+#include "ring.h"
 #include "uart.h"
 #include "shell.h"
 
@@ -21,15 +22,23 @@ extern uint32_t irq_stack_top;
 extern uint32_t stack_top;
 
 void check_stacks() {
-    void *memsize = (void *)MEMORY;
+    void *memsize = (void *) MEMORY;
     const void *addr = &stack_top;
     if (addr >= memsize)
         panic();
-    /*
-      addr = &irq_stack_top;
-      if (addr >= memsize)
+
+    addr = &irq_stack_top;
+    if (addr >= memsize)
         panic();
-    */
+}
+
+/**
+ * Initialize the system
+ */
+void sys_init() {
+    check_stacks();
+    setup_uarts();
+    setup_irqs();
 }
 
 /**
@@ -38,12 +47,15 @@ void check_stacks() {
  * in assembly language, see the startup.s file.
  */
 void _start(void) {
-    check_stacks();
-    setup_uarts();
-    setup_irqs();
+    sys_init();
     shell_init();
     for (;;) {
-        core_halt();
+        shell_process();
+        core_disable_irqs();
+        if (ring_empty()) {
+            core_halt();
+        }
+        core_enable_irqs();
     }
 }
 

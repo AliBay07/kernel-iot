@@ -1,8 +1,10 @@
-# Build file
+# Build files
 */build
 
 # IDE
-.idea
+step1/.idea/
+step1/.vscode/
+step1/.settings/
 
 # Prerequisites
 *.d
@@ -28,7 +30,7 @@
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
+# Shared objects (including Windows DLLs)
 *.dll
 *.so
 *.so.*
@@ -56,3 +58,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+

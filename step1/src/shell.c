@@ -1,5 +1,6 @@
 #include "shell.h"
 #include "uart.h"
+#include "ring.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -176,4 +177,12 @@ void shell_init() {
     history_count = 0;
     history_index = -1;
     uart_send_string(UART0, "> ");
+}
+
+void shell_process() {
+    uint8_t c;
+    while(!ring_empty()) {
+        c = ring_get();
+        shell_process_char(c);
+    }
 }

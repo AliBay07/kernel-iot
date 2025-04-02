@@ -19,4 +19,9 @@ void shell_process_char(char c);
  */
 void shell_init();
 
+/*
+ * Processes the shell input.
+ */
+void shell_process();
+
 #endif //SHELL_H
