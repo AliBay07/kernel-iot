@@ -20,12 +20,13 @@ BUILD       = build/
 BUILD_ASM   = $(BUILD)asm/
 BUILD_SRC   = $(BUILD)src/
 SRC_DIR     = src
+ASM_DIR     = asm
 INC_DIR     = include
 
 SRC_C       = $(wildcard $(SRC_DIR)/*.c)
-SRC_ASM     = $(wildcard $(SRC_DIR)/*.s)
+SRC_ASM     = $(wildcard $(ASM_DIR)/*.s)
 
-OBJS_ASM    = $(patsubst $(SRC_DIR)/%.s,$(BUILD_ASM)/%.o,$(SRC_ASM))
+OBJS_ASM    = $(patsubst $(ASM_DIR)/%.s,$(BUILD_ASM)/%.o,$(SRC_ASM))
 OBJS_C      = $(patsubst $(SRC_DIR)/%.c,$(BUILD_SRC)/%.o,$(SRC_C))
 
 OBJS        = $(OBJS_ASM) $(OBJS_C)
@@ -62,7 +63,7 @@ build:
 	@mkdir -p $(BUILD) $(BUILD_ASM) $(BUILD_SRC)
 
 # Compile Assembly files
-$(BUILD_ASM)/%.o: $(SRC_DIR)/%.s | build
+$(BUILD_ASM)/%.o: $(ASM_DIR)/%.s | build
 	$(TOOLCHAIN)-as $(ASFLAGS) -o $@ $<
 
 # Compile C files
