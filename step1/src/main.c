@@ -14,15 +14,16 @@
  */
 #include "main.h"
 #include "isr.h"
-#include "ring.h"
+#include "process.h"
 #include "uart.h"
 #include "shell.h"
+#include "allocator.h"
 
 extern uint32_t irq_stack_top;
 extern uint32_t stack_top;
 
 void check_stacks() {
-    void *memsize = (void *) MEMORY;
+    const void *memsize = (void *) MEMORY;
     const void *addr = &stack_top;
     if (addr >= memsize)
         panic();
@@ -37,6 +38,7 @@ void check_stacks() {
  */
 void sys_init() {
     check_stacks();
+    init_heap();
     setup_uarts();
     setup_irqs();
 }
@@ -48,17 +50,12 @@ void sys_init() {
  */
 void _start(void) {
     sys_init();
-    shell_init();
-    for (;;) {
-        shell_process();
-        core_disable_irqs();
-        if (ring_empty()) {
-            core_halt();
-        }
-        core_enable_irqs();
-    }
+    process_t* p_shell = process_create(shell_start);
+    process_start(p_shell);
+    panic();
 }
 
 void panic() {
+    uart_send_string(UART0, "PANIC: System halted.\r\n");
     for (;;);
 }

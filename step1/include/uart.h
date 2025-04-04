@@ -13,9 +13,6 @@
  * this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-
-
-
 #ifndef UART_H_
 #define UART_H_
 

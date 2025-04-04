@@ -24,4 +24,11 @@ void shell_init();
  */
 void shell_process();
 
+/*
+ * Starts the shell.
+ * This function is called once at startup.
+ */
+void shell_start();
+
+
 #endif //SHELL_H

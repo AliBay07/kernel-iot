@@ -13,8 +13,8 @@ int strncmp(const char *s1, const char *s2, uint32_t n) {
     return 0;
 }
 
-uint32_t strlen(const char *s) {
-    uint32_t len = 0;
+int strlen(const char *s) {
+    int len = 0;
     while (s[len] != '\0') {
         len++;
     }
@@ -26,4 +26,14 @@ char *strcpy(char *dest, const char *src) {
     while ((*dest++ = *src++) != '\0');
     return ret;
 }
+
+void *memcpy(void *dest, const void *src, uint32_t n) {
+    uint8_t *d = dest;
+    const uint8_t *s = src;
+    while (n--) {
+        *d++ = *s++;
+    }
+    return dest;
+}
+
 

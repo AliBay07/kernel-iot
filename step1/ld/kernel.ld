@@ -45,6 +45,12 @@ SECTIONS
   . = ALIGN(4);
   _bss_end = .;
 
+  /* Heap region for dynamic memory allocation */
+  . = ALIGN(4);
+  __heap_start__ = .;
+  . = . + 0x2000; /* 8KB for the heap */
+  __heap_end__ = .;
+
   /*
    * Finally, reserve some memory for the C stack
    * Remember that stacks are growing downward,
