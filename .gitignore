@@ -1,10 +1,10 @@
 # Build files
-*/build
+/build
 
 # IDE
-step1/.idea/
-step1/.vscode/
-step1/.settings/
+.idea/
+.vscode/
+.settings/
 
 # Prerequisites
 *.d
