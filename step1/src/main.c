@@ -18,29 +18,41 @@
 #include "uart.h"
 #include "shell.h"
 #include "allocator.h"
+#include "error_handler.h"
 
 extern uint32_t irq_stack_top;
 extern uint32_t stack_top;
+extern uint32_t __heap_start__;
+extern uint32_t __heap_end__;
 
 void check_stacks() {
     const void *memsize = (void *) MEMORY;
     const void *addr = &stack_top;
+
     if (addr >= memsize)
-        panic();
+        sys_exit(-1,"Stack overflow");
 
     addr = &irq_stack_top;
     if (addr >= memsize)
-        panic();
+        sys_exit(-1,"IRQ stack overflow");
+
+    addr = &__heap_start__;
+    if (addr >= memsize)
+        sys_exit(-1,"Heap start overflow");
+
+    addr = &__heap_end__;
+    if (addr >= memsize)
+        sys_exit(-1,"Heap end overflow");
 }
 
 /**
  * Initialize the system
  */
 void sys_init() {
-    check_stacks();
     init_heap();
     setup_uarts();
     setup_irqs();
+    check_stacks();
 }
 
 /**
@@ -50,12 +62,8 @@ void sys_init() {
  */
 void _start(void) {
     sys_init();
-    process_t* p_shell = process_create(shell_start);
+    process_t* p_shell = process_create(shell_start, NULL,
+        shell_read_listener, NULL);
     process_start(p_shell);
-    panic();
-}
-
-void panic() {
-    uart_send_string(UART0, "PANIC: System halted.\r\n");
-    for (;;);
+    sys_exit(0,"End of _start entry point");
 }

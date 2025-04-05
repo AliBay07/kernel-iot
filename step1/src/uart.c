@@ -14,9 +14,13 @@
  */
 
 #include "uart.h"
+
+#include <error_handler.h>
+
 #include "main.h"
 #include "uart-mmio.h"
 #include "ring.h"
+#include "process.h"
 #include <stdint.h>
 
 struct uart {
@@ -63,12 +67,13 @@ void uart_interrupt(void *cookie_uart) {
     const cookie_uart_t *cookie = (cookie_uart_t *) cookie_uart;
     char c;
     uart_receive(cookie->uartno, &c);
-
     while (c) {
-        if (ring_full()) panic();
-        ring_put(c);
+        if (!active_process) sys_exit(-1, "No active process found int UART interrupt");
+        if (ring_full(&active_process->context.ring)) sys_exit(-1, "Ring full in UART interrupt");
+        ring_put(&active_process->context.ring, c);
         uart_receive(cookie->uartno, &c);
     }
+    active_process->context.read_listener();
 }
 
 void uart_receive(const uint8_t uartno, char *pt) {

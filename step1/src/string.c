@@ -1,8 +1,7 @@
 #include "string.h"
 
-int strncmp(const char *s1, const char *s2, uint32_t n) {
-    uint32_t i;
-    for (i = 0; i < n; i++) {
+int strncmp(const char *s1, const char *s2, const uint32_t n) {
+    for (uint32_t i = 0; i < n; i++) {
         if (s1[i] != s2[i]) {
             return ((unsigned char)s1[i]) - ((unsigned char)s2[i]);
         }
@@ -35,5 +34,33 @@ void *memcpy(void *dest, const void *src, uint32_t n) {
     }
     return dest;
 }
+
+void int_to_string(int value, char *str) {
+    char temp[INT_TO_STRING_MAX];
+    int i = 0;
+    int is_negative = 0;
+
+    if (value < 0) {
+        is_negative = 1;
+        value = -value;
+    }
+
+    do {
+        temp[i++] = '0' + (value % 10);
+        value /= 10;
+    } while (value > 0);
+
+    if (is_negative) {
+        temp[i++] = '-';
+    }
+
+    temp[i] = '\0';
+
+    for (int j = 0; j < i; j++) {
+        str[j] = temp[i - j - 1];
+    }
+    str[i] = '\0';
+}
+
 
 

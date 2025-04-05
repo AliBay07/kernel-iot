@@ -19,7 +19,7 @@ void init_heap(void) {
 
 void* h_alloc(uint32_t size) {
     // Align requested size to 4 bytes
-    size = (size + 3) & ~3;
+    size = size + 3 & ~3;
     block_t *prev = 0;
     block_t *curr = free_list;
 

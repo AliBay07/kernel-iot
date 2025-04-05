@@ -2,7 +2,7 @@
 #include "uart.h"
 #include "ring.h"
 #include "isr.h"
-#include <stdint.h>
+#include "process.h"
 #include <string.h>
 
 #define SHELL_BUFFER_SIZE 256
@@ -78,7 +78,7 @@ void redraw_line(void) {
     uart_send_string(UART0, "\r> ");
     uart_send_string(UART0, shell_buffer);
     uart_send_string(UART0, "\033[K");
-    for (int i = 0; i < (int) (shell_index - cursor_pos); i++) {
+    for (int i = 0; i < shell_index - cursor_pos; i++) {
         uart_send_string(UART0, "\033[D");
     }
 }
@@ -141,7 +141,7 @@ void shell_process_char(char c) {
     // --- Handle backspace ---
     if (c == 0x7F || c == '\b') {
         if (cursor_pos > 0) {
-            for (i = cursor_pos - 1; i < (int) shell_index - 1; i++) {
+            for (i = cursor_pos - 1; i < shell_index - 1; i++) {
                 shell_buffer[i] = shell_buffer[i + 1];
             }
             shell_index--;
@@ -168,7 +168,7 @@ void shell_process_char(char c) {
                 shell_buffer[shell_index] = '\0';
                 uart_send(UART0, c);
             } else {
-                for (i = shell_index; i > (int) cursor_pos; i--) {
+                for (i = shell_index; i > cursor_pos; i--) {
                     shell_buffer[i] = shell_buffer[i - 1];
                 }
                 shell_buffer[cursor_pos] = c;
@@ -182,6 +182,7 @@ void shell_process_char(char c) {
 }
 
 void shell_init() {
+    exit_shell = 0;
     shell_index = 0;
     cursor_pos = 0;
     shell_buffer[0] = '\0';
@@ -190,24 +191,17 @@ void shell_init() {
     uart_send_string(UART0, "> ");
 }
 
-void shell_process() {
-    while (!ring_empty()) {
-        const uint8_t c = ring_get();
+void shell_read_listener(void) {
+    while (active_process && !ring_empty(&active_process->context.ring)) {
+        const char c = ring_get(&active_process->context.ring);
         shell_process_char(c);
     }
 }
 
-void shell_start() {
+void shell_start(void* arg) {
     shell_init();
     while (1) {
-        shell_process();
-
         if (exit_shell) break;
-
-        core_disable_irqs();
-        if (ring_empty()) {
-            core_halt();
-        }
-        core_enable_irqs();
+        core_halt();
     }
 }

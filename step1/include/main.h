@@ -21,7 +21,6 @@
 
 typedef uint8_t bool_t;
 
-void panic();
 void kprintf(const char *fmt, ...);
 
 __inline__ __attribute__((always_inline)) uint8_t mmio_read8(void *bar,

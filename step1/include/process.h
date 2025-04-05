@@ -1,40 +1,60 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include <ring.h>
 #include <stdint.h>
 
-#define MAX_PROCESSES 10
+#define MAX_PROCESSES  10
 
 /*
  * Process states
  */
 typedef enum {
   CREATED,
-  RUNNING,
   READY,
-  BLOCKED,
-  WAITING,
+  RUNNING,
   TERMINATED
 } process_state_t;
+
+/*
+ * Process context
+ */
+typedef struct p_context {
+  uint32_t pid;
+  process_state_t state;
+  ring_t ring;
+  void (*read_listener)(void);
+  void (*write_listener)(void);
+} p_context_t;
 
 /*
  * Process structure
  */
 typedef struct process {
-  uint32_t pid;
-  process_state_t state;
-  void (*entry_point)(void);
+  p_context_t context;
+  void (*entry_point)(void* cookie);
+  void *entry_point_cookie;
 } process_t;
+
+extern process_t process_table[MAX_PROCESSES];
+extern uint32_t process_count;
+extern process_t *active_process;
 
 /*
  * Initialize a process
  */
-uint32_t process_init(process_t *process, void (*entry_point)(void));
+uint32_t process_init(process_t *process, void (*entry_point)(void*),
+                      void* cookie,
+                      void (*read_listener)(void),
+                      void (*write_listener)(void));
 
 /*
  * Create a process
  */
-process_t* process_create(void (*entry_point)(void));
+process_t* process_create(void (*entry_point)(void*),
+                          void* cookie,
+                          void (*read_listener)(void),
+                          void (*write_listener)(void));
 
 /*
  * Start all processes
