@@ -1,14 +1,15 @@
 # Minimal Embedded Kernel in C
 
-This project is a simple embedded kernel written in C. It includes basic memory management, process creation, interrupt handling, and a shell interface that runs through UART.
+This project is a simple embedded kernel written in C. It includes basic memory management, task creation, interrupt and event handling, and a shell interface that runs through UART.
 
 The kernel supports:
 
 - A custom memory allocator
-- Process creation and execution
+- Task creation and activation
 - Ring buffer-based I/O for each process
 - UART interrupts
-- A basic shell as a user process
+- Event handling
+- A basic shell as a user task
 - Listener functions for reading from input buffers
 
 ## Running the project
