@@ -110,5 +110,5 @@ void vic_enable_irq(const uint32_t irq, void (*callback)(void *),
  */
 void vic_disable_irq(const uint32_t irq) {
     handlers[irq] = (handler_t){0, 0};
-    mmio_write32((void *) VIC_BASE_ADDR, VICINTENABLE, 0 << irq);
+    mmio_write32((void *) VIC_BASE_ADDR, VICINTCLEAR, 1 << irq);
 }

@@ -20,6 +20,7 @@
  * Defines the number of available UARTs
  * and their respective numéro.
  */
+#include <task.h>
 #include <stdint.h>
 #define NUARTS 3
 #define UART0 0
@@ -77,6 +78,14 @@ void setup_uarts();
  * Global initialization for all the UARTs
  */
 void uarts_init();
+
+/*
+ * This function is called by the UART interrupt handler
+ * to link the UART to the process context.
+ * The process context is used to send the received
+ * characters to the process.
+ */
+void uart_grab(uint32_t uartno, t_context_t* t_context);
 
 /*
  * Enables the UART, identified by the given numéro.

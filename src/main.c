@@ -14,11 +14,12 @@
  */
 #include "main.h"
 #include "isr.h"
-#include "process.h"
+#include "task.h"
 #include "uart.h"
 #include "shell.h"
 #include "allocator.h"
 #include "error_handler.h"
+#include "event_handler.h"
 
 extern uint32_t irq_stack_top;
 extern uint32_t stack_top;
@@ -49,10 +50,11 @@ void check_stacks() {
  * Initialize the system
  */
 void sys_init() {
+    check_stacks();
     init_heap();
     setup_uarts();
     setup_irqs();
-    check_stacks();
+    event_handler_init();
 }
 
 /**
@@ -62,8 +64,17 @@ void sys_init() {
  */
 void _start(void) {
     sys_init();
-    process_t* p_shell = process_create(shell_start, NULL,
-        shell_read_listener, NULL);
-    process_start(p_shell);
+    task_t* t_shell = task_create(shell_init, NULL,
+        shell_read_listener, shell_write_listener, UART0);
+    task_activate(t_shell);
+
+    while (1) {
+        const event_t* event = event_pop();
+        if (event != NULL) {
+            event->callback(event->cookie);
+        } else {
+            core_halt();
+        }
+    };
     sys_exit(0,"End of _start entry point");
 }

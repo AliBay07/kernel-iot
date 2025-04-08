@@ -36,7 +36,7 @@ OBJS        = $(OBJS_ASM) $(OBJS_C)
 ifeq ($(BOARD),versatile)
   VGA       = -nographic
   SERIAL    = -serial mon:stdio
-  MEMSIZE   = 32
+  MEMSIZE   = 64
   MEMORY    = "$(MEMSIZE)K"
   MACHINE   = versatileab
   QEMU      = qemu-system-arm

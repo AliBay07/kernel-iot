@@ -1,9 +1,12 @@
 #include "shell.h"
+
+#include <error_handler.h>
+
 #include "uart.h"
 #include "ring.h"
 #include "isr.h"
-#include "process.h"
 #include <string.h>
+#include <task.h>
 
 #define SHELL_BUFFER_SIZE 256
 #define HISTORY_SIZE 10
@@ -20,6 +23,8 @@ int history_count = 0;
 int history_index = -1;
 
 int exit_shell = 0;
+
+t_context_t* t_context;
 
 void shell_process_command(const char *cmd) {
     if (cmd[0] != '\0') {
@@ -181,27 +186,39 @@ void shell_process_char(char c) {
     }
 }
 
-void shell_init() {
+void shell_read_listener(void* arg) {
+    (void*)arg;
+
+    if (!t_context) {
+        sys_exit(-1, "Shell read listener: t_context is NULL");
+    }
+
+    while (!ring_empty(&t_context->ring)) {
+        const char c = ring_get(&t_context->ring);
+        shell_process_char(c);
+    }
+}
+
+void shell_write_listener(void* arg) {
+    (void*)arg;
+
+    if (!t_context) {
+        sys_exit(-1, "Shell write listener: t_context is NULL");
+    }
+
+
+    // This function is not used in the shell implementation
+}
+
+void shell_init(t_context_t* context, void* arg) {
+    (void*)arg;
+
     exit_shell = 0;
     shell_index = 0;
     cursor_pos = 0;
     shell_buffer[0] = '\0';
     history_count = 0;
     history_index = -1;
+    t_context = context;
     uart_send_string(UART0, "> ");
-}
-
-void shell_read_listener(void) {
-    while (active_process && !ring_empty(&active_process->context.ring)) {
-        const char c = ring_get(&active_process->context.ring);
-        shell_process_char(c);
-    }
-}
-
-void shell_start(void* arg) {
-    shell_init();
-    while (1) {
-        if (exit_shell) break;
-        core_halt();
-    }
 }
